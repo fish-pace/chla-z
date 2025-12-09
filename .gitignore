@@ -1,0 +1,6 @@
+.ipynb_checkpoints
+test/
+__pycache__
+core.*
+data/raw
+data/matchups
