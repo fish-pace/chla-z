@@ -280,6 +280,371 @@ def time_series_split(
 
     return X, y, X_train, y_train, X_val, y_val, X_test, y_test, X_mean, X_std
 
+
+# --- Saving a model bundle ---
+
+from dataclasses import dataclass
+
+@dataclass
+class MLBundle:
+    model: object
+    meta: dict
+    X_train: object = None
+    X_test: object = None
+    y_train: object = None
+    y_test: object = None
+    predict_fn: callable = None
+    plot_fn: callable = None
+
+    def predict(self, *args, **kwargs):
+        if self.predict_fn is None:
+            raise AttributeError("No predict_fn stored in this bundle.")
+        return self.predict_fn(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        if self.plot_fn is None:
+            raise AttributeError("No plot_fn stored in this bundle.")
+        return self.plot_fn(*args, **kwargs)
+
+# Save a model bundle   
+import json
+import zipfile
+import pickle
+import tempfile
+import inspect
+from pathlib import Path
+
+def save_ml_bundle(
+    zip_path,
+    model,
+    X_train=None,
+    X_test=None,
+    y_train=None,
+    y_test=None,
+    meta=None,
+    predict_helper=None,
+    plot_helper=None,
+    extra_helpers=None,
+):
+    """
+    Save a model bundle (BRT, CNN, etc.) to a single .zip.
+
+    Contents:
+      - model.pkl   or model.keras
+      - data.pkl    (X_train, X_test, y_train, y_test)
+      - meta.json   (includes helper function source if provided)
+
+    meta["model_kind"] controls how the model is saved:
+      - "keras"   -> saved as model.keras
+      - anything else -> pickled as model.pkl
+    """
+    meta = dict(meta or {})
+
+    # Infer model kind if not given
+    if "model_kind" not in meta:
+        cls_name = type(model).__name__.lower()
+        if "sequential" in cls_name or "functional" in cls_name:
+            meta["model_kind"] = "keras"
+        else:
+            meta["model_kind"] = "pickle"
+
+    # A dict of name -> source
+    helpers_src = {}
+    
+    # Predict helper
+    if predict_helper is not None:
+        name = predict_helper.__name__
+        meta["predict_helper_name"] = name
+        try:
+            helpers_src[name] = inspect.getsource(predict_helper)
+        except OSError:
+            pass
+
+    # Plot helper
+    if plot_helper is not None:
+        name = plot_helper.__name__
+        meta["plot_helper_name"] = name
+        try:
+            helpers_src[name] = inspect.getsource(plot_helper)
+        except OSError:
+            pass
+
+    # Extra helpers
+    extra_helpers = extra_helpers or {}
+    for name, fn in extra_helpers.items():
+        try:
+            helpers_src[name] = inspect.getsource(fn)
+        except OSError:
+            pass
+
+    # Store in meta
+    if helpers_src:
+        meta["helpers"] = helpers_src
+        
+    zip_path = Path(zip_path)
+    zip_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+
+        # 1) Save model
+        if meta["model_kind"] == "keras":
+            # assume tf.keras or keras model
+            from keras.saving import save_model  # or model.save
+            model_path = tmp / "model.keras"
+            model.save(model_path)
+        else:
+            model_path = tmp / "model.pkl"
+            with open(model_path, "wb") as f:
+                pickle.dump(model, f)
+
+        # 2) Save data
+        data = {
+            "X_train": X_train,
+            "X_test": X_test,
+            "y_train": y_train,
+            "y_test": y_test,
+        }
+        data_path = tmp / "data.pkl"
+        with open(data_path, "wb") as f:
+            pickle.dump(data, f)
+
+        # 3) Save meta
+        meta_path = tmp / "meta.json"
+        meta_path.write_text(json.dumps(meta, indent=2))
+
+        # 4) Zip everything
+        with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as z:
+            z.write(model_path, arcname=model_path.name)
+            z.write(data_path, arcname=data_path.name)
+            z.write(meta_path, arcname=meta_path.name)
+
+    return str(zip_path)
+
+def _reconstruct_helper_from_meta(meta, which):
+    """
+    which: "predict" or "plot"
+    Looks for meta[f"{which}_helper_name"] and meta[f"{which}_helper_source"].
+    Returns a function or None.
+    """
+    name_key = f"{which}_helper_name"
+    src_key = f"{which}_helper_source"
+
+    if name_key not in meta or src_key not in meta:
+        return None
+
+    func_name = meta[name_key]
+    src = meta[src_key]
+
+    # Execute the source in a fresh namespace
+    ns = {}
+    exec(src, ns, ns)
+    fn = ns.get(func_name)
+    return fn
+
+
+def _print_bundle_usage(bundle, bundle_path):
+    model_kind = bundle.meta.get("model_kind", "pickle")
+    predict_name = bundle.meta.get("predict_helper_name")
+    plot_name = bundle.meta.get("plot_helper_name")
+
+    print(f"\nLoaded ML bundle from: {bundle_path}")
+    print(f"  model_kind : {model_kind}")
+    print(f"  target     : {bundle.meta.get('target_name', 'unknown')}")
+    print(f"  features   : {len(bundle.meta.get('feature_cols', []))} columns"
+          if "feature_cols" in bundle.meta else "")
+
+    print("\nUsage example (Python):")
+
+    print("  bundle = load_ml_bundle('path/to/bundle.zip')")
+
+    if predict_name and bundle.predict_fn is not None:
+        print(f"  # Predict using helper '{predict_name}'")
+        print("  pred_da = bundle.predict(")
+        print("      R_dataset,                # xr.Dataset with lat/lon + predictors")
+        print("      brt_model=bundle.model,   # or cnn model, etc.")
+        if "feature_cols" in bundle.meta:
+            print("      feature_cols=bundle.meta['feature_cols'],")
+        print("  )")
+    else:
+        print("  # This bundle has no stored predict helper; call bundle.model.predict(...) directly.")
+
+    if plot_name and bundle.plot_fn is not None:
+        print(f"\n  # Plot using helper '{plot_name}'")
+        print("  fig, ax = bundle.plot(pred_da, pred_label='Prediction')")
+    else:
+        print("\n  # This bundle has no stored plot helper; use your own plotting code.")
+
+    print("")  # final newline
+
+
+def load_ml_bundle(zip_path):
+    """
+    Load a bundle created by save_ml_bundle().
+
+    Returns:
+        MLBundle instance with:
+          - model, meta
+          - X_train, X_test, y_train, y_test
+          - predict_fn, plot_fn (if stored)
+    """
+    import json
+    import zipfile
+    import pickle
+    import tempfile
+    from pathlib import Path
+
+    zip_path = Path(zip_path)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        with zipfile.ZipFile(zip_path, "r") as z:
+            z.extractall(tmp)
+
+        meta = json.loads((tmp / "meta.json").read_text())
+        model_kind = meta.get("model_kind", "pickle")
+
+        if model_kind == "keras":
+            import keras
+            model = keras.saving.load_model(tmp / "model.keras")
+        else:
+            with open(tmp / "model.pkl", "rb") as f:
+                model = pickle.load(f)
+
+        with open(tmp / "data.pkl", "rb") as f:
+            data = pickle.load(f)
+
+    # reconstruct helpers if present
+    predict_fn = _reconstruct_helper_from_meta(meta, "predict")
+    plot_fn = _reconstruct_helper_from_meta(meta, "plot")
+
+    bundle = MLBundle(
+        model=model,
+        meta=meta,
+        X_train=data.get("X_train"),
+        X_test=data.get("X_test"),
+        y_train=data.get("y_train"),
+        y_test=data.get("y_test"),
+        predict_fn=predict_fn,
+        plot_fn=plot_fn,
+    )
+
+    _print_bundle_usage(bundle, zip_path)
+
+    return bundle
+
+# ---- Make Predictions from Model
+
+def make_prediction_brt(
+    R: xr.Dataset,
+    brt_model,
+    feature_cols,
+    consts=None,
+    bundle_helpers=None,   # NEW → dict of functions reconstructed from bundle
+) -> xr.DataArray:
+
+    consts = consts or {}
+    bundle_helpers = bundle_helpers or {}
+
+    # ----------
+    # Helper lookup function
+    # ----------
+    def get_helper_or_fail(func_name, message):
+        fn = _get_helper(func_name, bundle_helpers)
+        if fn is None:
+            raise RuntimeError(
+                f"Required helper '{func_name}' was not found.\n"
+                f"{message}\n\n"
+                f"Options:\n"
+                f"  • If using a model bundle, reload with load_ml_bundle() so helpers are included.\n"
+                f"  • Otherwise import your helpers manually, e.g.:\n"
+                f"        import ml_utils as mu\n"
+                f"        {func_name} = mu.{func_name}\n"
+                f"  • Or pre-compute the feature and add it to your xarray.Dataset."
+            )
+        return fn
+
+    # ----------
+    # Make a working copy
+    # ----------
+    ds = R.copy()
+
+    # ----------
+    # Add derived features if needed
+    # ----------
+
+    # --- solar_hour ---
+    if "solar_hour" in feature_cols and "solar_hour" not in ds and "solar_hour" not in consts:
+        add_solar = _get_helper("add_solar_hour_feature", bundle_helpers)
+        if add_solar is None:
+            raise RuntimeError(
+                "Feature 'solar_hour' is required but not found.\n"
+                "Please either:\n"
+                "  • load a model bundle that contains add_solar_hour_feature(), or\n"
+                "  • import ml_utils as mu and pass consts={'solar_hour': value}, or\n"
+                "  • add a 'solar_hour' variable to your xarray.Dataset."
+            )
+        ds = add_solar(ds)
+
+    # --- seasonal sin/cos ---
+    needs_sin = "sin_time" in feature_cols and "sin_time" not in ds and "sin_time" not in consts
+    needs_cos = "cos_time" in feature_cols and "cos_time" not in ds and "cos_time" not in consts
+
+    if needs_sin or needs_cos:
+        add_season = get_helper_or_fail(
+            "add_seasonal_time_features",
+            "Feature 'sin_time' or 'cos_time' is required but not present."
+        )
+        ds = add_season(ds, sin_name="sin_time", cos_name="cos_time")
+
+    # --- spherical coords ---
+    needs_x = "x_geo" in feature_cols and "x_geo" not in ds and "x_geo" not in consts
+    needs_y = "y_geo" in feature_cols and "y_geo" not in ds and "y_geo" not in consts
+    needs_z = "z_geo" in feature_cols and "z_geo" not in ds and "z_geo" not in consts
+
+    if needs_x or needs_y or needs_z:
+        add_sph = get_helper_or_fail(
+            "add_spherical_coords",
+            "Spherical coordinate features are required but missing."
+        )
+        ds = add_sph(ds)
+
+    # ----------
+    # Stack and predict
+    # ----------
+    ds_stack = ds.stack(pixel=("lat", "lon"))
+    n_pixel = ds_stack.sizes["pixel"]
+
+    df_cols = {}
+    for feat in feature_cols:
+        if feat in consts:
+            df_cols[feat] = np.full(n_pixel, consts[feat], dtype=float)
+        else:
+            if feat not in ds_stack:
+                raise KeyError(
+                    f"Feature '{feat}' was not found in dataset or consts.\n"
+                    f"If this is a derived variable, ensure the helper function "
+                    f"is available or add it manually."
+                )
+            df_cols[feat] = ds_stack[feat].values.reshape(n_pixel)
+
+    df_pred = pd.DataFrame(df_cols, columns=feature_cols)
+
+    # Handle NaNs
+    valid_mask = ~df_pred.isna().any(axis=1)
+    df_valid = df_pred[valid_mask]
+
+    y_pred_flat = np.full(n_pixel, np.nan)
+    if len(df_valid) > 0:
+        y_pred_flat[valid_mask.values] = brt_model.predict(df_valid)
+
+    # reshape back
+    pred_map = y_pred_flat.reshape(R.sizes["lat"], R.sizes["lon"])
+    return xr.DataArray(pred_map, coords={"lat": R["lat"], "lon": R["lon"]}, dims=("lat", "lon"))
+
+
+## OLD
+
 # Save and Load fitted model
 import json, zipfile, tempfile
 from pathlib import Path
@@ -313,7 +678,6 @@ def save_cnn_bundle(zip_path, model, X_mean, X_std, meta=None):
             z.write(tmp / "meta.json", arcname="meta.json")
 
     return str(zip_path)
-
 
 def load_cnn_bundle(zip_path, compile=False):
     """
