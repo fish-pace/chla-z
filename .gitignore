@@ -1,6 +1,8 @@
 .ipynb_checkpoints
 test/
 __pycache__
+.jupyter_cache
 core.*
 data/raw
 data/matchups
+test.*

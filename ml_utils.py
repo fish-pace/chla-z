@@ -535,10 +535,16 @@ def load_ml_bundle(zip_path):
     """
     Load a bundle created by save_ml_bundle().
 
-    Returns:
-        MLBundle instance with:
+    Returns
+    -------
+    bundle : MLBundle
+        Instance with:
           - model, meta, data (dataset + indices)
           - predict_fn, plot_fn (if stored)
+          - data["splits"] = dict with X_train, X_test, y_train, y_test
+    X_train, X_test, y_train, y_test : pandas objects
+        Train-test splits reconstructed from dataset, feature_cols, y_col,
+        train_idx, and test_idx.
     """
     import json
     import zipfile
@@ -556,6 +562,7 @@ def load_ml_bundle(zip_path):
         meta = json.loads((tmp / "meta.json").read_text())
         model_kind = meta.get("model_kind", "pickle")
 
+        # --- load model ---
         if model_kind == "keras":
             import keras
             model = keras.saving.load_model(tmp / "model.keras")
@@ -563,7 +570,7 @@ def load_ml_bundle(zip_path):
             with open(tmp / "model.pkl", "rb") as f:
                 model = pickle.load(f)
 
-        # --- load dataset + indices ---
+        # --- load dataset + indices + metadata ---
         with open(tmp / "data.pkl", "rb") as f:
             data = pickle.load(f)
 
@@ -585,6 +592,45 @@ def load_ml_bundle(zip_path):
         if plot_name:
             plot_fn = ns.get(plot_name)
 
+    # --- Rebuild X_train, X_test, y_train, y_test from stored pieces ---
+    # Assumes save_ml_bundle stored these in data and/or meta
+    dataset = data.get("dataset")
+    if dataset is None:
+        raise ValueError("`dataset` not found in bundle data.")
+
+    # feature_cols and y_col might be in data or meta
+    feature_cols = data.get("feature_cols", meta.get("feature_cols"))
+    y_col = data.get("y_col", meta.get("y_col"))
+
+    if feature_cols is None:
+        raise ValueError("`feature_cols` not found in data/meta.")
+
+    if y_col is None:
+        raise ValueError("`y_col` not found in data/meta.")
+
+    train_idx = data.get("train_idx")
+    test_idx = data.get("test_idx")
+
+    if train_idx is None or test_idx is None:
+        raise ValueError("`train_idx` and/or `test_idx` not found in data.")
+
+    # Build full X, y
+    X = dataset[feature_cols]
+    y = dataset[y_col]
+
+    # Use .loc so this works for labels or boolean masks
+    X_train = X.loc[train_idx]
+    X_test = X.loc[test_idx]
+    y_train = y.loc[train_idx]
+    y_test = y.loc[test_idx]
+
+    # Attach splits back into data for convenience
+    data["X_train"] = X_train
+    data["X_test"] = X_test
+    data["y_train"] = y_train
+    data["y_test"] = y_test
+
+    # Build bundle
     bundle = MLBundle(
         model=model,
         meta=meta,
@@ -595,6 +641,7 @@ def load_ml_bundle(zip_path):
 
     _print_bundle_usage(bundle, zip_path)
 
+    # Return bundle
     return bundle
 
 
