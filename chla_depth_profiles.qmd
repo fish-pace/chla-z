@@ -122,60 +122,11 @@ Even though Rrs is *measured above the surface*:
 
 PACE’s spectral richness gives us new power to infer **what’s happening at depth**.
 
-# ⛓️ In-situ Platforms: OOI
+# General Idea
 
-- Fixed moorings with fluorometers at discrete depths  
-- High-frequency CHLA, temperature, salinity  
-- Key for shallow structure, seasonal cycles, and diel variability
-
-# OOI Platforms
-
-```{python}
-#| fig-align: center
-import pandas as pd
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-
-# Load data
-url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/data/CHLA_ooi_profiles.parquet"
-df = pd.read_parquet(url)
-
-df_clean = df
-
-# Projections
-data_crs = ccrs.PlateCarree()
-map_crs = ccrs.Robinson()
-
-fig = plt.figure(figsize=(10, 5))
-ax = plt.axes(projection=map_crs)
-
-# Make sure we see the WHOLE globe
-ax.set_global()
-
-# Add coastlines and land
-ax.coastlines(resolution="110m")
-ax.add_feature(cfeature.LAND, facecolor="0.9", zorder=0)
-ax.add_feature(cfeature.OCEAN, facecolor="white", zorder=0)
-
-# Gridlines (no labels for Robinson)
-gl = ax.gridlines(linestyle="--", alpha=0.5)
-
-# Plot points
-ax.scatter(
-    df_clean["lon"].values,
-    df_clean["lat"].values,
-    s=20,
-    marker="o",
-    transform=data_crs,
-    zorder=2,
-)
-
-ax.set_title("OOI CHLA data Mar 2024 to Dec 2025")
-plt.tight_layout()
-plt.show()
-
-```
+* Get CHLA depth (z) profiles from in-situ platforms (BGC-Argo and Moorings)
+* Train CHLA(z) on hyperspectral Rrs using Boosted Regression Trees
+* Predict CHLA(z)
 
 # 🤖 In-situ Platforms: Bio-Argo
 
@@ -184,42 +135,8 @@ plt.show()
 - Provides chlorophyll profiles around the globe
 
 ```{python}
-import pandas as pd
-url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/data/CHLA_argo_profiles.parquet"
-df = pd.read_parquet(url)
-# plot the data
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
+#| fig-align: center
 
-proj = ccrs.PlateCarree()
-
-fig = plt.figure(figsize=(8, 6))
-ax = plt.axes(projection=proj)
-
-# Add coastlines and land
-ax.coastlines(resolution="110m")
-ax.add_feature(cfeature.LAND, facecolor="0.9")
-ax.add_feature(cfeature.OCEAN, facecolor="white")
-ax.gridlines(draw_labels=True, linestyle="--", alpha=0.5)
-
-df_clean = df.dropna(subset=["CHLA_0_10"])
-
-# Add the Argo points from df
-ax.scatter(
-    df_clean["LONGITUDE"].values,
-    df_clean["LATITUDE"].values,
-    s=1,
-    marker=".",
-    transform=proj,
-)
-
-ax.set_title("Argo CHLA data Mar 2024 to Dec 2025")
-
-plt.show()
-```
-
-```{python}
 import pandas as pd
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -255,7 +172,7 @@ ax.scatter(
     df_clean["LATITUDE"].values,
     s=1,
     marker=".",
-    transform=proj,
+    transform=data_crs,
     zorder=2,
 )
 
@@ -267,13 +184,14 @@ plt.show()
 # A chlorophyll profile from an BGC-Argo buoy
 
 ```{python}
+#| fig-align: center
+#| out-height: 80%
+
 # Load data from GitHub
 import pandas as pd
 url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/data/argo_na_2024_03.parquet"
 df_na = pd.read_parquet(url)
-```
 
-```{python}
 # make plot
 import numpy as np
 import matplotlib.pyplot as plt
@@ -360,12 +278,61 @@ plt.tight_layout()
 plt.show()
 ```
 
-# General Idea
+# ⛓️ In-situ Platforms: OOI
 
-Train CHLA(z) on hyperspectral Rrs using Boosted Regression Trees
+- Fixed moorings with fluorometers at discrete depths  
+- High-frequency CHLA, temperature, salinity  
+- Key for shallow structure, seasonal cycles, and diel variability
+
+```{python}
+#| fig-align: center
+import pandas as pd
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
+# Load data
+url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/data/CHLA_ooi_profiles.parquet"
+df = pd.read_parquet(url)
+
+df_clean = df
+
+# Projections
+data_crs = ccrs.PlateCarree()
+map_crs = ccrs.Robinson()
+
+fig = plt.figure(figsize=(10, 5))
+ax = plt.axes(projection=map_crs)
+
+# Make sure we see the WHOLE globe
+ax.set_global()
+
+# Add coastlines and land
+ax.coastlines(resolution="110m")
+ax.add_feature(cfeature.LAND, facecolor="0.9", zorder=0)
+ax.add_feature(cfeature.OCEAN, facecolor="white", zorder=0)
+
+# Gridlines (no labels for Robinson)
+gl = ax.gridlines(linestyle="--", alpha=0.5)
+
+# Plot points
+ax.scatter(
+    df_clean["lon"].values,
+    df_clean["lat"].values,
+    s=20,
+    marker="o",
+    transform=data_crs,
+    zorder=2,
+)
+
+ax.set_title("OOI CHLA data Mar 2024 to Dec 2025")
+plt.tight_layout()
+plt.show()
+
+```
 
 
-# 🧰 Depth Binning (Critical Step)
+# 🧰 Depth Binning in-situ Data (Critical Step)
 
 Raw profiles come at irregular depths → ML models need consistent targets.
 
@@ -674,6 +641,8 @@ y_test = y_test_all[var]
 ```
 
 ```{python}
+#| fig-align: center
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
@@ -1016,6 +985,8 @@ chla = chla.transpose("lat", "lon")
 ```
 
 ```{python}
+#| fig-align: center
+
 # Make prediction
 var = "CHLA_0_10"
 feature_cols = list(X_train.columns)
@@ -1033,6 +1004,8 @@ PACE chlor_a to BRT with type = 1 (ooi) and solar_hour = 0 (midnight)
 Notice that at high PACE `chlor_a`, the BRT model predicts lower `CHLA_0_10`. We might be able to correct this by using the whole CHLA depth profile (next section). 
 
 ```{python}
+#| fig-align: center
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
@@ -1081,6 +1054,9 @@ We can do this for the whole globe.
 # 👁️ Example CHLA Profiles: Observed vs BRT
 
 ```{python}
+#| fig-align: center
+#| out-height: 80%
+
 import matplotlib.pyplot as plt
 import numpy as np
 
