@@ -4,13 +4,15 @@ author: Eli Holmes
 format:
   revealjs:
     theme:
-      - default
-      - solarized
+#      - default
+#      - solarized
+      - simple
     slide-number: true
     transition: fade
     center: false
     fig-align: center
     out-width: 80%
+    css: slides.css   
 execute:
   echo: false
   warning: false
@@ -30,15 +32,17 @@ jupyter:
     name: python3
 ---
 
-# 🌍 Why Global CHLA Depth Profiles?
 
-- Surface chlorophyll maps are abundant — but **ecosystems live in the water column**, not just the surface.
-- Vertical structure of CHLA reveals:
-  - **Subsurface chlorophyll maxima**
-  - Light–nutrient tradeoffs
-  - Mixed-layer dynamics
-- Yet:  
-  **We have no global product providing full CHLA-depth profiles daily.**
+# Motivation: Global CHLA Depth Profiles
+
+- Satellite chlorophyll products primarily represent near-surface waters.
+- Ecosystems and biogeochemical processes depend on the **vertical** distribution of chlorophyll-a.
+- Vertical structure provides information on:
+  - Subsurface chlorophyll maxima
+  - Light–nutrient compensation
+  - Mixed-layer dynamics and stratification
+- At present, there is **no global, routinely produced product** of global daily CHLA depth profiles.
+
 
 ```{python}
 # --- Core data handling and plotting libraries ---
@@ -64,39 +68,37 @@ from sklearn.metrics import r2_score, mean_squared_error
 from scipy.ndimage import uniform_filter1d
 ```
 
-# 🌊 Why Do Depth Profiles Matter (Fisheries)?
+# Relevance for Fisheries
 
-- Many fish species interact with **subsurface productivity layers**, not just the surface.
-- Larval fish and forage fish rely on **subsurface prey fields** governed by CHLA depth structure.
-- Vertical structure informs:
-  - Habitat models
-  - Recruitment studies
-  - Climate change impacts on lower trophic levels
+- Many fish species use habitats that are structured vertically.
+- Early life stages and forage species often depend on prey fields associated with subsurface productivity layers, especially across the full mixed layer depth.
+- Knowing the vertical distribution of CHLA can contribute to:
+  - Habitat models and species distribution models
+  - Recruitment and survival studies
+  - Understanding the phenology of phytoplankton vertical migration
 
-**Depth ≠ just a detail — it's the environment fish actually occupy.**
+# Relevance for the Carbon Cycle
 
-# 🌫️ Why CHLA Profiles Matter (Carbon Cycling)
+- The depth distribution of phytoplankton influences:
+  - Depth of primary production
+  - Carbon export efficiency and remineralization
+  - Radiative transfer and heating within the upper ocean
+- Subsurface chlorophyll maxima can contribute substantially to net primary production.
+- Accurate CHLA profiles are therefore important inputs for biogeochemical and carbon-cycle models.
 
-- Phytoplankton depth distribution controls:
-  - **Primary production**
-  - **Carbon export efficiency**
-  - **Light absorption and attenuation**
-- Subsurface CHLA maxima can dominate **net community production**.
+# PACE Mission: Hyperspectral Ocean Color
 
-**Accurate vertical biomass is essential for carbon-cycle models.**
+- PACE provides hyperspectral water-leaving radiance reflectances, Rrs(λ), across the visible spectrum.
+- These spectra capture:
+  - Pigment composition and concentration
+  - Particle size and concentration
+  - Optical properties that are influenced by subsurface structure
 
-# 🌈 Why PACE Changes the Game
-
-- PACE’s hyperspectral **Rrs(λ)** captures more spectral detail than prior missions.
-- It samples biological and optical features that:
-  - Penetrate below the surface
-  - Respond to pigment composition
-  - Vary with particle concentration and size
-- With hyperspectral data, we can infer **signals tied to subsurface structure**, not just surface color.
-
-# 📈 What Does Hyperspectral Rrs Look Like?
+# 📈 What Does Hyperspectral Rrs Look Like Compared to Multi-Spectral?
 
 ```{python}
+#| fig-align: center
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -112,7 +114,13 @@ plt.tight_layout()
 plt.show()
 ```
 
-# 📡 Why Rrs Contains Subsurface Information
+# Why Hyperspectral Rrs Gives New Insights into CHLA at depth
+
+- Traditional ocean color sensor provided 3-6 spectra so limited information on the full shape.
+- The additional spectral information relative to multispectral sensors offers new leverage for inferring vertical CHLA structure.
+
+
+# Why Rrs Contains Subsurface Information
 
 Even though Rrs is *measured above the surface*:
 
