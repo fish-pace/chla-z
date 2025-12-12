@@ -94,23 +94,7 @@ from scipy.ndimage import uniform_filter1d
 
 # What Does Hyperspectral Rrs Look Like Compared to Multi-Spectral?
 
-```{python}
-#| fig-align: center
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-wavelength = np.arange(350, 800, 2)
-rrs = 0.005 + 0.003 * np.exp(-(wavelength - 440) ** 2 / 4000) + 0.001 * np.sin(wavelength / 40)
-
-plt.figure(figsize=(6, 4))
-plt.plot(wavelength, rrs)
-plt.xlabel("Wavelength (nm)")
-plt.ylabel("Rrs")
-plt.title("Example Hyperspectral Rrs Spectrum")
-plt.tight_layout()
-plt.show()
-```
+![](figures/OWT.jpg)
 
 # Why Hyperspectral Rrs Gives New Insights into CHLA at depth
 
@@ -143,7 +127,7 @@ PACE’s spectral richness gives us new power to infer **what’s happening at d
 
 # BGC-Argo
 
-<img src="figures/argo_float_cycle.png", width=50%>
+![](figures/argo_float_cycle.png)
 
 # In-situ Platforms: BGC-Argo
 
@@ -297,7 +281,7 @@ plt.show()
 
 # Ocean Observing Initiative
 
-<img src="figures/ooi.jpg", width=50%>
+![](figures/ooi.jpg)
 
 # In-situ Platforms: OOI
 
