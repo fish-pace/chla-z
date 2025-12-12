@@ -92,7 +92,7 @@ from scipy.ndimage import uniform_filter1d
   - Particle size and concentration
   - Optical properties that are influenced by subsurface structure
 
-# 📈 What Does Hyperspectral Rrs Look Like Compared to Multi-Spectral?
+# What Does Hyperspectral Rrs Look Like Compared to Multi-Spectral?
 
 ```{python}
 #| fig-align: center
@@ -128,13 +128,24 @@ Even though Rrs is *measured above the surface*:
 
 PACE’s spectral richness gives us new power to infer **what’s happening at depth**.
 
+# Nice idea. Yeah. Right.
+
+# Results spoiler. Yes it does work.
+
+![](figures/pred_vs_obs_profiles.jpg)
+
 # General Idea
 
 * Get CHLA depth (z) profiles from in-situ platforms (BGC-Argo and Moorings)
 * Train CHLA(z) on hyperspectral Rrs using Boosted Regression Trees
 * Predict CHLA(z)
+* Create daily global maps of CHLA(z) using PACE Rrs daily files
 
-# 🤖 In-situ Platforms: Bio-Argo
+# BGC-Argo
+
+<img src="figures/argo_float_cycle.png", width=50%>
+
+# In-situ Platforms: BGC-Argo
 
 - Profiling floats: 0–1000+ m  
 - Continuous vertical CHLA profiles  
@@ -284,7 +295,11 @@ plt.tight_layout()
 plt.show()
 ```
 
-# ⛓️ In-situ Platforms: OOI
+# Ocean Observing Initiative
+
+<img src="figures/ooi.jpg", width=50%>
+
+# In-situ Platforms: OOI
 
 - Fixed moorings with fluorometers at discrete depths  
 - High-frequency CHLA, temperature, salinity  
@@ -336,7 +351,12 @@ plt.tight_layout()
 plt.show()
 ```
 
-# 🧰 Depth Binning in-situ Data (Critical Step)
+# Preparing Data for Training
+
+* Binning
+* Matchups to PACE Rrs
+
+# Depth Binning in-situ Data (Critical Step)
 
 Raw profiles come at irregular depths → ML models need consistent targets.
 
@@ -349,15 +369,15 @@ Raw profiles come at irregular depths → ML models need consistent targets.
 👉 This is why we train **one BRT per depth bin** instead of forcing a single parametric profile shape.
 
 
-# 🗃️ Matching Step: Match in-situ lat/lon/day to PACE Level 3 daily data
+# Matching Step: Match in-situ lat/lon/day to PACE Level 3 daily data
 
 * Get Rrs for all 128 wavelengths for every row of data
 * Remove any rows with no Rrs. 80% has no Rrs since PACE data is from swaths and is not gap-filled.
 * Remove data with that seems to be bio-fouled (sensor issue). Ca 20 rows of data
-* Result: 5540 in-situ CHLA depth profiles. Roughly 450 to 700 for each depth bin.
+* Result: **5540** in-situ CHLA depth profiles. Roughly 450 to 700 for each depth bin.
 
 
-# The modeling step
+# The Modeling Step
 
 * Add on solar_hour to the feature set because that has a big impact on in-situ CHLA estimates
 * Add on the type of platform (Argo versus OOI) since those are little different
@@ -366,7 +386,7 @@ Raw profiles come at irregular depths → ML models need consistent targets.
 * Evaluate performance using the test data (CHLA depth profiles)
 
 
-# 🌳 What is a Boosted Regression Tree (BRT)?
+# What is a Boosted Regression Tree (BRT)?
 
 - Ensemble of many shallow decision trees  
 - Each tree learns the residuals of the previous ones (“boosting”)  
@@ -375,28 +395,26 @@ Raw profiles come at irregular depths → ML models need consistent targets.
   - High-dimensional spectral predictors
   - Heterogeneous covariates
 - Makes **no assumptions** about the vertical shape of CHLA profiles.
+- I used `sklearn` `HistGradientBoostingRegressor()` function. Standard. Easy.
 
-Perfect for mapping **hyperspectral Rrs → scalar CHLA at a given depth**.
-
-
-# 🪜 One BRT Per Depth Bin
+# One BRT Per Depth Bin
 
 Each model predicts **CHLA in a single depth range**:
 
 - Input:  
   - Hyperspectral PACE Rrs(λ)  
-  - Extras (solar hour, platform type, etc.)
+  - Extras (solar hour, platform type)
 - Output:  
   - CHLA in that bin (e.g., 0–10 m, 10–20 m, …)
 
 Benefits:
 
-- Uses **partial profiles** (only bins with valid CHLA).
+- Uses all data because it can use partial profiles (only bins with valid CHLA).
 - Avoids imposing a fixed profile shape.
 - Enables simple diagnostics: R², RMSE, bias vs depth.
 
 
-# 🧮 Results
+# Results
 
 ```{python}
 ## Load model
@@ -636,7 +654,7 @@ depth_centers = metrics_df["z_center"].values
 
 # Performance
 
-Overall we see a close match between our preditions and our test data for CHLA in the upper 10m.
+Overall we see a close match between our predictions and our test data for CHLA in the upper 10m.
 
 ```{python}
 var = "CHLA_0_10"
@@ -686,9 +704,7 @@ plt.show()
 
 # Prediction of CHLA 0 to 10m
 
-Using PACE data for hyperspectral Rrs, we can make a prediction of surface CHLA. Note it is not our goal to predict surface CHLA as there are many existing surface CHLA products. We will be predicting CHLA depth profiles 0 to 200m. But let's look at this first.
-
-Let's compare to PACE's surface CHLA product as a first pass check, but note that these are different products trained on different in-situ data.
+Using PACE data for hyperspectral Rrs, we can make a prediction of surface CHLA. Let's compare to PACE's surface CHLA product as a first pass check, but note that these are different products trained on different in-situ data. Note surface CHLA is not our goal. 
 
 ```{python}
 # Get PACE Rrs
@@ -1055,11 +1071,11 @@ We can do this for the whole globe.
 
 # Let's predict CHLA depth profiles
 
-# 👁️ Example CHLA Profiles: Observed vs BRT
+# CHLA Profiles: Observed vs BRT
 
 ```{python}
 #| fig-align: center
-#| out-height: 80%
+#| out-height: 70%
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1154,7 +1170,7 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-# 📏 Depth-wise Metrics for Each Bin
+# Depth-wise Metrics for Each Bin
 
 * Errors for depth bin prediction
 * Location of peak CHLA
@@ -1165,9 +1181,56 @@ plt.show()
 # code for metrics is abover where model loaded
 ```
 
+# Absolute Errors for Depth Bins
+
+```{python}
+#| fig-align: center
+#| out-height: 70%
+
+fig, axes = plt.subplots(1, 3, figsize=(12, 6), sharey=True)
+ax_r2, ax_rmse, ax_bias = axes
+
+# ---- Panel 1: R² (log-scale fit) ----
+ax_r2.plot(metrics_df["p90_abs_err"], depth_centers, marker="o")
+ax_r2.set_xlabel("90% of Absolute Errors")
+ax_r2.set_ylabel("Depth (m)")
+ax_r2.set_xlim(0, 1.0)
+ax_r2.invert_yaxis()
+ax_r2.grid(True)
+ax_r2.set_title("90% of abs errors are below this")
+
+# ---- Panel 2: RMSE on log scale ----
+rmse_lin_vals = metrics_df["median_abs_err"]
+max_rmse = np.nanmax(rmse_lin_vals)
+ax_rmse.plot(rmse_lin_vals, depth_centers, marker="o")
+ax_rmse.set_xlabel("median abs error (CHLA, mg m$^{-3}$)")
+ax_rmse.set_xlim(0, max_rmse * 1.1 if np.isfinite(max_rmse) else 1.0)
+ax_rmse.grid(True)
+ax_rmse.set_title("Median absolute error (linear scale)")
+
+# ---- Panel 3: Bias on log scale ----
+bias_lin_vals = metrics_df["bias_lin"]
+max_abs_bias = np.nanmax(np.abs(bias_lin_vals))
+lim_bias = max_abs_bias * 1.1 if np.isfinite(max_abs_bias) else 0.1
+
+ax_bias.axvline(0.0, color="k", linestyle="--", linewidth=1)
+ax_bias.plot(bias_lin_vals, depth_centers, marker="o")
+ax_bias.set_xlabel("Bias (CHLA, mg m$^{-3}$)")
+ax_bias.set_xlim(-lim_bias, lim_bias)
+ax_bias.grid(True)
+ax_bias.set_title("Mean Bias (linear scale)")
+
+fig.suptitle("CHLA BRT Performance vs Depth on Absolute Scale", fontsize=14)
+plt.tight_layout(rect=[0, 0, 1, 0.95])
+plt.show()
+```
+
 # Proportional Errors for Depth Bins
 
 ```{python}
+#| fig-align: center
+#| out-height: 70%
+
 fig, axes = plt.subplots(1, 3, figsize=(12, 6), sharey=True)
 ax_r2, ax_rmse, ax_bias = axes
 
@@ -1270,7 +1333,7 @@ plt.tight_layout(rect=[0, 0, 1, 0.92])
 plt.show()
 ```
 
-# 📡 Peak Depth and Integrated CHLA Metrics (Code)
+# Peak Depth and Integrated CHLA Metrics (Code)
 
 ```{python}
 import numpy as np
@@ -1404,11 +1467,56 @@ peak_df[
 ].head()
 ```
 
-# 📉 Peak Depth and Height
-
-# 📉 Integrated CHLA (0–200 m): Obs vs Pred
+# Peak Depth and Height
 
 ```{python}
+#| fig-align: center
+#| out-height: 70%
+
+bins = [0, 50, 100, 150, 250]
+labels = ["0–50", "50–100", "100–150", "150–200+"]
+
+df_peaks = peak_df[["peak_obs_m", "peak_error_m"]].dropna().copy()
+df_peaks["obs_bin"] = pd.cut(
+    df_peaks["peak_obs_m"], bins=bins, labels=labels, right=False
+)
+
+data_for_box = [
+    df_peaks.loc[df_peaks["obs_bin"] == lab, "peak_error_m"].to_numpy()
+    for lab in labels
+]
+
+fig, ax = plt.subplots(figsize=(8, 5))
+
+# Boxplot
+ax.boxplot(data_for_box, vert=True)
+ax.set_xticklabels(labels)
+ax.set_xlabel("Observed peak depth (m)")
+ax.set_ylabel("Peak depth error (m)\n(predicted − observed)")
+ax.axhline(0, linestyle="--", linewidth=1)
+
+# Jittered points per bin
+x_jitter = 0.15  # half-width around each box position
+y_jitter = 2  # half-width around each box position
+for i, lab in enumerate(labels, start=1):  # box positions are 1..n
+    vals = df_peaks.loc[df_peaks["obs_bin"] == lab, "peak_error_m"].to_numpy()
+    if len(vals) == 0:
+        continue
+    x_vals = i + (np.random.rand(len(vals)) - 0.5) * 2 * x_jitter
+    vals = vals + (np.random.rand(len(vals)) - 0.5) * 2 * y_jitter
+    ax.scatter(x_vals, vals, s=8, alpha=0.3)
+
+plt.tight_layout()
+plt.title("Predicted versus observed depth of peak CHLA")
+plt.show()
+```
+
+# Integrated CHLA (0–200 m): Obs vs Pred
+
+```{python}
+#| fig-align: center
+#| out-height: 70%
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
@@ -1467,7 +1575,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-# 🗺️ Next Step: Toward Global Maps of CHLA Profiles
+# Next Step: Toward Global Maps of CHLA Profiles
 
 Once the per-depth-bin BRTs are trained:
 
@@ -1482,6 +1590,4 @@ This moves us toward **global, depth-resolved CHLA density from space**.
 
 ---
 
-# 🎉 Thank You
-
-Questions? Discussion?
+![](https://science.nasa.gov/wp-content/uploads/2023/06/pace-spacecraft-beauty2-jpg.webp)
