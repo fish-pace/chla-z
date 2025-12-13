@@ -1061,7 +1061,7 @@ We can do this for the whole globe.
 
 ```{python}
 #| fig-align: center
-#| out-width: 60%
+#| out-width: 30%
 
 import matplotlib.pyplot as plt
 import numpy as np

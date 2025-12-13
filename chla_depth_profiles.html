@@ -252,7 +252,7 @@ Caveat: Mostly trained on data from open ocean (BGC-Argo). Most data was for sur
 <li>Global</li>
 <li><strong>Deep Water</strong> (&gt;1000m) not coastal</li>
 </ul>
-<div id="9f0fde67" class="cell" data-execution_count="3">
+<div id="53c74427" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -265,7 +265,7 @@ Caveat: Mostly trained on data from open ocean (BGC-Argo). Most data was for sur
 
 <section id="a-chlorophyll-profile-from-an-bgc-argo-buoy" class="title-slide slide level1 center">
 <h1>A Chlorophyll Profile from an BGC-Argo Buoy</h1>
-<div id="2b5e1ebd" class="cell" data-execution_count="4">
+<div id="0cd5778d" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -285,7 +285,7 @@ Caveat: Mostly trained on data from open ocean (BGC-Argo). Most data was for sur
 </li>
 <li>Key for shallow structure, seasonal cycles, and diel variability</li>
 </ul>
-<div id="57893758" class="cell" data-execution_count="5">
+<div id="10936140" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -388,7 +388,7 @@ Caveat: Mostly trained on data from open ocean (BGC-Argo). Most data was for sur
 
 <section id="results" class="title-slide slide level1 center">
 <h1>Results</h1>
-<div id="4c7bae43" class="cell" data-execution_count="6">
+<div id="bb53da10" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Loaded ML bundle from: models/brt_chla_profiles_bundle.zip
@@ -421,7 +421,7 @@ Usage example (Python):
 <section id="performance" class="title-slide slide level1 center">
 <h1>Performance</h1>
 <p>Overall we see a close match between our predictions and our test data for CHLA in the upper 10m — for non-coastal data.</p>
-<div id="05d62900" class="cell" data-execution_count="10">
+<div id="aee19128" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -436,7 +436,7 @@ Usage example (Python):
 <section id="prediction-of-chla-0-to-10m" class="title-slide slide level1 center">
 <h1>Prediction of CHLA 0 to 10m</h1>
 <p>Using PACE data for hyperspectral Rrs, we can make a prediction of surface CHLA. Let’s compare to PACE’s surface CHLA product as a first pass check, but note that these are different products trained on different in-situ data. Note surface CHLA is not our goal.</p>
-<div id="a992f539" class="cell" data-execution_count="14">
+<div id="f5e5743c" class="cell" data-execution_count="13">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -451,7 +451,7 @@ Usage example (Python):
 <h2>Scatter plot</h2>
 <p>PACE chlor_a to BRT with type = 1 (ooi) and solar_hour = 0 (midnight)</p>
 <p>Notice that at high PACE <code>chlor_a</code>, the BRT model predicts lower <code>CHLA_0_10</code>. We might be able to correct this by using the whole CHLA depth profile (next section).</p>
-<div id="05748a14" class="cell" data-execution_count="15">
+<div id="8069e26b" class="cell" data-execution_count="14">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -474,7 +474,7 @@ Usage example (Python):
 
 <section id="chla-profiles-observed-vs-brt" class="title-slide slide level1 nostretch center">
 <h1>CHLA Profiles: Observed vs BRT</h1>
-<div id="555348f3" class="cell" data-execution_count="16">
+<div id="5eaf74da" class="cell" data-execution_count="15">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -487,7 +487,7 @@ Usage example (Python):
 
 <section id="when-surface-chla-is-high" class="title-slide slide level1 nostretch center">
 <h1>When surface CHLA is high?</h1>
-<div id="bc3850ab" class="cell" data-execution_count="17">
+<div id="b12d1dd8" class="cell" data-execution_count="16">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -501,7 +501,7 @@ Usage example (Python):
 <section id="coastal-waters" class="title-slide slide level1 nostretch center">
 <h1>Coastal waters?</h1>
 <p>Not enough data yet. No correction was done for bathymetry (scattering off bottom), so that will need to be fixed for shallow water.</p>
-<div id="4bd4eedd" class="cell" data-execution_count="18">
+<div id="b84ca89c" class="cell" data-execution_count="17">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -524,7 +524,7 @@ Usage example (Python):
 
 <section id="absolute-errors-for-depth-bins" class="title-slide slide level1 center">
 <h1>Absolute Errors for Depth Bins</h1>
-<div id="3bb60781" class="cell" data-execution_count="20">
+<div id="ea82e3cc" class="cell" data-execution_count="19">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -537,7 +537,7 @@ Usage example (Python):
 
 <section id="proportional-errors-for-depth-bins" class="title-slide slide level1 center">
 <h1>Proportional Errors for Depth Bins</h1>
-<div id="be40f898" class="cell" data-execution_count="21">
+<div id="a326a290" class="cell" data-execution_count="20">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -550,7 +550,7 @@ Usage example (Python):
 
 <section id="peak-depth-and-integrated-chla-metrics-code" class="title-slide slide level1 center">
 <h1>Peak Depth and Integrated CHLA Metrics (Code)</h1>
-<div id="f3fefbb1" class="cell" data-execution_count="22">
+<div id="b8cc0066" class="cell" data-execution_count="21">
 <div class="cell-output cell-output-display" data-execution_count="21">
 <div>
 <style scoped="">
@@ -653,11 +653,11 @@ Usage example (Python):
 
 <section id="peak-depth-and-height" class="title-slide slide level1 center">
 <h1>Peak Depth and Height</h1>
-<div id="fe620279" class="cell" data-execution_count="23">
+<div id="91d8b07e" class="cell" data-execution_count="22">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="chla_depth_profiles_files/figure-revealjs/cell-23-output-1.png" class="quarto-figure quarto-figure-center" width="756" height="485"></p>
+<p><img data-src="chla_depth_profiles_files/figure-revealjs/cell-23-output-1.png" class="quarto-figure quarto-figure-center" width="756" height="484"></p>
 </figure>
 </div>
 </div>
@@ -666,7 +666,7 @@ Usage example (Python):
 
 <section id="integrated-chla-0200-m" class="title-slide slide level1 center">
 <h1>Integrated CHLA (0–200 m)</h1>
-<div id="7e725a63" class="cell" data-execution_count="24">
+<div id="7da27536" class="cell" data-execution_count="23">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
