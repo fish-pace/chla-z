@@ -1057,7 +1057,7 @@ We can do this for the whole globe.
 
 # Let's predict CHLA depth profiles
 
-# CHLA Profiles: Observed vs BRT
+# CHLA Profiles: Observed vs BRT  { .nostretch }
 
 ```{python}
 #| fig-align: center
@@ -1156,7 +1156,7 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-# When surface CHLA is high?
+# When surface CHLA is high?  { .nostretch }
 
 ```{python}
 #| fig-align: center
@@ -1255,7 +1255,7 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-# Coastal waters?
+# Coastal waters?  { .nostretch }
 
 Not enough data yet. No correction was done for bathymetry (scattering off bottom), so that will need to be fixed for shallow water. 
 
