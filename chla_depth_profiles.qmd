@@ -1057,7 +1057,7 @@ We can do this for the whole globe.
 
 # Let's predict CHLA depth profiles
 
-# CHLA Profiles: Observed vs BRT  { .nostretch }
+## CHLA Profiles: Observed vs BRT  { .nostretch }
 
 ```{python}
 #| fig-align: center
