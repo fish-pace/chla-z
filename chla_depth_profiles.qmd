@@ -112,9 +112,9 @@ Even though Rrs is *measured above the surface*:
 
 PACE’s spectral richness gives us new power to infer **what’s happening at depth**.
 
-# Results spoiler. It does seem to work...
+# Results spoiler. It works!
 
-Caveat: Mostly trained on data from open ocean (BGC-Argo). Most data was for surface CHLA < 1. Need more coastal data. Though it does do a decent job for the coastal data and surface CHLA > 10 data that we do have.
+Caveat: Mostly trained on data from open ocean (BGC-Argo). Most data was for surface CHLA < 1. Need more coastal data. Though it does do a decent job for the surface CHLA > 10 data that we do have.
 <center>
 ![](figures/pred_vs_obs_profiles.jpg)
 </center>
@@ -1061,7 +1061,7 @@ We can do this for the whole globe.
 
 ```{python}
 #| fig-align: center
-#| out-height: 70%
+#| out-width: 60%
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1156,11 +1156,11 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-# Does it work when surface CHLA is high?
+# When surface CHLA is high?
 
 ```{python}
 #| fig-align: center
-#| out-height: 60%
+#| out-width: 60%
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1255,13 +1255,13 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-# Does it work in coastal waters?
+# Coastal waters?
 
 Not enough data yet. No correction was done for bathymetry (scattering off bottom), so that will need to be fixed for shallow water. 
 
 ```{python}
 #| fig-align: center
-#| out-height: 60%
+#| out-width: 60%
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1695,7 +1695,7 @@ plt.title("Predicted versus observed depth of peak CHLA")
 plt.show()
 ```
 
-# Integrated CHLA (0–200 m): Obs vs Pred
+# Integrated CHLA (0–200 m)
 
 ```{python}
 #| fig-align: center
@@ -1759,7 +1759,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-# Next Step: Toward Global Maps of CHLA Profiles
+# Toward Global Maps of CHLA Profiles
 
 Once the per-depth-bin BRTs are trained:
 
@@ -1770,7 +1770,7 @@ Once the per-depth-bin BRTs are trained:
   - Depth of maximum CHLA
   - Biomass-weighted mean depth
 
-This moves us toward **global, depth-resolved CHLA density from space**.
+This moves us toward estimates of **global, depth-resolved CHLA density from space**.
 
 ---
 
