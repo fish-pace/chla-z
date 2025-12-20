@@ -654,11 +654,12 @@ def make_prediction_brt(
     brt_model,
     feature_cols,
     consts=None,
+    linear=False
 ) -> xr.DataArray:
     """
     Predict a single BRT depth-bin field on a lat/lon grid, automatically
     constructing derived features (solar_hour, sin_time/cos_time, x_geo/y_geo/z_geo)
-    if they are requested in feature_cols and not already present.
+    if they are requested in feature_cols and not already present. If linear=True, CHLA is returned on the linear scale otherwise it is log10.
 
     Parameters
     ----------
@@ -670,6 +671,8 @@ def make_prediction_brt(
         Predictor names expected by the model.
     consts : dict, optional
         Constant feature values, e.g. {"solar_hour": 12.0, "type": 1}.
+    linear : bool, optional
+        If True, then the predictions are backtransformed to linear.
 
     Returns
     -------
@@ -758,7 +761,10 @@ def make_prediction_brt(
 
     y_pred_flat = np.full(n_pixel, np.nan, dtype=float)
     if len(df_valid) > 0:
-        y_pred_flat[valid_mask.values] = brt_model.predict(df_valid)
+        y_pred = brt_model.predict(df_valid)
+        if linear:
+            y_pred = 10**y_pred
+        y_pred_flat[valid_mask.values] = y_pred
 
     # reshape back
     pred_map = y_pred_flat.reshape(R.sizes["lat"], R.sizes["lon"])
@@ -780,6 +786,7 @@ def predict_all_depths_for_day(
     z=None,                # optional override for depth centers
     z_name: str = "z",     # vertical dimension name
     silent: bool = False,  # kept for compatibility; not used right now
+    linear: bool = False,  # backtransform CHLA to linear
 ):
     """
     Run BRT predictions for all depth bins for a single day.
@@ -948,7 +955,10 @@ def predict_all_depths_for_day(
 
             if len(df_valid) > 0:
                 # model.predict may return float64; cast to float32
-                y_pred_flat[valid_mask.values] = model.predict(df_valid).astype(np.float32)
+                y_pred = model.predict(df_valid).astype(np.float32)
+                if linear:
+                    y_pred = 10**y_pred
+                y_pred_flat[valid_mask.values] = y_pred.astype(np.float32)
 
             # Reshape back to (lat_chunk, lon)
             nlat_chunk = R_chunk.sizes["lat"]
