@@ -570,7 +570,7 @@ Benefits:
 
 ```{python}
 ## Load model
-bundle = mu.load_ml_bundle("models/brt_chla_profiles_bundle.zip")
+bundle = mu.load_ml_bundle("../models/brt_chla_profiles_bundle.zip")
 brt_models = bundle.model
 meta = bundle.meta
 rrs_cols = meta["rrs_cols"]
