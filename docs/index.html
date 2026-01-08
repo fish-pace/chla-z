@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CHLA-Z: Global Chlorophyll-a Vertical Distribution Dataset</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      background-color: #fff;
+      color: #1a1a1a;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .badges .badge {
+      display: inline-block;
+      background-color: #2b7bb9;
+      color: #fff;
+      padding: 0.3rem 0.7rem;
+      margin: 0.2rem;
+      border-radius: 5px;
+      font-size: 0.8rem;
+    }
+
+    .columns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .column {
+      flex: 1 1 48%;
+      min-width: 300px;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    a {
+      color: #2b7bb9;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .note {
+      background: #f8fbff;
+      border: 1px solid #d9e8ff;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      margin: 1rem 0;
+    }
+
+    pre {
+      background: #f4f4f4;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CHLA-Z: Global Chlorophyll-a Vertical Distribution (0–200 m)</h1>
+
+  <div class="badges">
+    <span class="badge">ocean color</span>
+    <span class="badge">chlorophyll-a</span>
+    <span class="badge">Bio-Argo</span>
+    <span class="badge">PACE</span>
+    <span class="badge">machine learning</span>
+    <span class="badge">NOAA</span>
+  </div>
+
+  <div class="columns">
+    <div class="column">
+      <h2>Description</h2>
+
+      <p>
+        CHLA-Z is a global gridded dataset providing estimates of chlorophyll-a concentration as a function of depth
+        (0–200 m) on a regular latitude/longitude grid, along with derived vertical-structure metrics.
+        The product is generated using a boosted regression tree (BRT) model trained on PACE OCI Level-3 mapped
+        remote-sensing reflectances (Rrs) and in-situ chlorophyll profile observations from Bio-Argo and OOI.
+      </p>
+
+      <ul>
+        <li><strong>Core variable:</strong> <code>CHLA</code> (time, z, lat, lon) — chlorophyll-a concentration (mg m<sup>-3</sup>)</li>
+        <li><strong>Derived layers:</strong>
+          <code>CHLA_int_0_200</code> (mg m<sup>-2</sup>),
+          <code>CHLA_peak</code> (mg m<sup>-3</sup>),
+          <code>CHLA_peak_depth</code> (m),
+          <code>CHLA_depth_center_of_mass</code> (m)
+        </li>
+        <li><strong>Vertical grid:</strong> 10 m bin centers with bounds <code>z_start</code>/<code>z_end</code></li>
+        <li><strong>Spatial grid:</strong> global regular lat/lon (~4 km nominal; 0.041666668° step)</li>
+        <li><strong>Temporal resolution:</strong> daily</li>
+        <li><strong>Format:</strong> Zarr v3 (cloud-optimized) and NetCDF (by day)</li>
+      </ul>
+
+      <div class="note">
+        <strong>Note on “4 km”:</strong> This dataset is on a regular latitude/longitude grid (0.041666668°).
+        North–south spacing is ~constant; east–west spacing decreases with latitude (cos(lat)).
+      </div>
+
+      <p>Example use</p>
+
+      <h3>Python (stream Zarr)</h3>
+      <pre>
+import xarray as xr
+
+zarr_url = "gcs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr"
+ds = xr.open_zarr(zarr_url, consolidated=False, 
+          storage_options={"token": "anon"})
+
+# Example: time series at a point (nearest grid cell)
+pt = ds["CHLA"].sel(lon=-155, lat=20, method="nearest")
+pt = pt.isel(z=0) # surface
+pt.sel(time=slice("2024-03-01", "2024-04-01")).plot()</pre>
+
+      <h3>Python (stream a NetCDF day)</h3>
+      <pre>
+import xarray as xr
+
+url = "gcs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/netcdf/chla_z_20240305_v2.nc"
+ds = xr.open_dataset(url, engine="h5netcdf", 
+          storage_options={"token": "anon"})
+
+# Plot surface CHLA for that day
+ds["CHLA"].isel(time=0, z=0).plot()</pre>
+
+      <h3>R (download NetCDF)</h3>
+      <div class="note">
+        R typically does not stream NetCDF directly from <code>gcs://</code>. Download first using HTTPS.
+      </div>
+      <pre>
+library(ncdf4)
+
+url <- "https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/netcdf/chla_z_20240305_v2.nc"
+download.file(url, "chla_z_20240305_v2.nc", mode = "wb")
+
+nc <- nc_open("chla_z_20240305_v2.nc")
+chl_surface <- ncvar_get(nc, "CHLA")[1, 1, , ]  # time=1, z=1
+image(chl_surface)
+nc_close(nc)</pre>
+
+    </div>
+
+    <div class="column">
+      <h2>Resources on Google Cloud</h2>
+
+      <p><strong>Bucket:</strong><br/>
+      <code>gs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z</code></p>
+
+      <p><strong>Access:</strong> Public / no authentication required for reads</p>
+
+      <p><strong>Browse bucket folders:</strong></p>
+      <ul>
+        <li>
+          <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/netcdf" target="_blank">
+            NetCDF files (daily)
+          </a>
+        </li>
+        <li>
+          <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr" target="_blank">
+            Zarr v3 store (cloud optimized)
+          </a>
+        </li>
+        <li>
+          <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/notebooks" target="_blank">
+            Sample notebooks (if present)
+          </a>
+        </li>
+        <li>
+          <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/metadata" target="_blank">
+            Metadata (if present)
+          </a>
+        </li>
+      </ul>
+
+      <h2>
+        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg" alt="GitHub" width="24"
+             style="vertical-align: middle; margin-right: 8px;">
+        GitHub Repo
+      </h2>
+      <p>
+        <strong>Repo:</strong>
+        <a href="https://github.com/fish-pace/chla-z-modeling" target="_blank">
+          https://github.com/fish-pace/chla-z-modeling
+        </a>
+      </p>
+
+      <h2>Suggested citation</h2>
+      <p>
+        Holmes, E. (2025). <em>CHLA-Z: Global chlorophyll-a vertical distribution (0–200 m) derived from PACE OCI and Bio-Argo using a BRT model</em>.
+        NOAA Fisheries (NMFS). Zarr v3 / NetCDF. (draft)
+      </p>
+
+      <div class="note">
+        <strong>Status:</strong> Research/draft product. Validation and uncertainty characterization are in progress;
+        please consult the documentation and repository for updates.
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>
+      Inputs include PACE OCI Level-3 mapped remote-sensing reflectances (NASA/GSFC/OBPG) and Bio-Argo profile observations.
+      Dataset and code are provided under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY 4.0</a>
+      unless otherwise noted.
+    </p>
+  </footer>
+
+</body>
+</html>
+
+
