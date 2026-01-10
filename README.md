@@ -1,4 +1,5 @@
 # CHLA-Z: Global Chlorophyll-a Vertical Distribution (0–200 m)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18204004.svg)](https://doi.org/10.5281/zenodo.18204004)
 
 **Tags:** ocean color · chlorophyll-a · Bio-Argo · PACE · machine learning · NOAA
 
