@@ -20,17 +20,4 @@
     "NOAA"
   ],
   "license": "CC-BY-4.0",
-  "related_identifiers": [
-    {
-      "identifier": "https://github.com/fish-pace/chla-z",
-      "relation": "isSupplementTo",
-      "resource_type": "software"
-    },
-    {
-      "identifier": "https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/",
-      "relation": "isSupplementTo",
-      "resource_type": "dataset"
-    }
-  ],
-  "notes": "Research/draft product. Variable names, spatial grid, and access paths are expected to remain stable; algorithm details, validation, and uncertainty characterization may change in subsequent versions."
-}
+  }
