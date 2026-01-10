@@ -120,11 +120,12 @@ surf <- r[[1]]  # surface CHLA
 plot(log10(surf), main = "log10 Surface CHLA (z = 1)")
 ```
 
-## Suggested citation
+## Citation
 
-> Holmes, E. (2025). *CHLA-Z: Global chlorophyll-a vertical distribution (0–200 m) derived from PACE OCI and Bio-Argo using a BRT model*.  
-> NOAA Fisheries (NMFS). Zarr v3 / NetCDF. (draft)
+If you use this dataset, please cite:
 
+> Holmes, E. (2026). *CHLA-Z: Global chlorophyll-a vertical distribution (0–200 m) derived from PACE OCI and Bio-Argo using a BRT model* (draft).  NOAA Fisheries (NMFS). Public Zarr v3 Dataset available NOAA Open Data Dissemination (NOAA) Program. version 0.1.0 (2026-01-09). https://doi.org/10.5281/zenodo.18204004
+ 
 ---
 
 ## Status
