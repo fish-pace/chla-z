@@ -1,7 +1,7 @@
 # Exclude non-release material
 old/ export-ignore
 __pycache__/ export-ignore
-text_and_talks/ export-ignore
+docs/text_and_talks/ export-ignore
 
 # Exclude test / scratch notebooks if any
 notebooks/testing/ export-ignore
