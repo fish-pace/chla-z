@@ -129,6 +129,8 @@
 
       <p>Example use</p>
 
+      <a href="https://colab.research.google.com/github/fish-pace/chla-z/blob/main/notebooks/examples.ipynb">Open example notebook in Colab</a>
+
       <h3>Python (stream Zarr)</h3>
       <pre>
 import xarray as xr
@@ -158,27 +160,31 @@ ds["CHLA"].isel(time=0, z=0).plot()</pre>
         R typically does not stream NetCDF directly from <code>gcs://</code>. Download first using HTTPS.
       </div>
       <pre>
-library(ncdf4)
-
+library(terra)
 url <- "https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/netcdf/chla_z_20240305_v2.nc"
 download.file(url, "chla_z_20240305_v2.nc", mode = "wb")
-
-nc <- nc_open("chla_z_20240305_v2.nc")
-chl_surface <- ncvar_get(nc, "CHLA")[1, 1, , ]  # time=1, z=1
-image(chl_surface)
-nc_close(nc)</pre>
+f <- "chla_z_20240305_v2.nc"
+r <- rast(f, subds = "CHLA")   # SpatRaster with 20 layers (z levels)
+# surface CHLA = first z layer
+surf <- r[[1]]
+plot(log10(surf), main = "log10 Surface CHLA (z=1)")
+</pre>
 
     </div>
 
     <div class="column">
-      <h2>Resources on Google Cloud</h2>
+      <h2>Resources</h2>
 
-      <p><strong>Bucket:</strong><br/>
-      <code>gs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z</code></p>
-
+    <p><strong>Google Cloud Bucket:</strong><br/>
+    <code>gs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z</code><br/>
+    <a href="https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/">
+    https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/
+    </a>
+    </p>
+        
       <p><strong>Access:</strong> Public / no authentication required for reads</p>
 
-      <p><strong>Browse bucket folders:</strong></p>
+      <p><strong>Browse resources:</strong></p>
       <ul>
         <li>
           <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/netcdf" target="_blank">
@@ -187,17 +193,17 @@ nc_close(nc)</pre>
         </li>
         <li>
           <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr" target="_blank">
-            Zarr v3 store (cloud optimized)
+            Zarr v3 store (daily cloud optimized)
           </a>
         </li>
         <li>
-          <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/notebooks" target="_blank">
-            Sample notebooks (if present)
+          <a href="https://github.com/fish-pace/chla-z/blob/main/notebooks" target="_blank">
+            Example notebooks
           </a>
         </li>
         <li>
-          <a href="https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/metadata" target="_blank">
-            Metadata (if present)
+          <a href="https://github.com/fish-pace/chla-z/blob/main/chla-z.json" target="_blank">
+            Metadata
           </a>
         </li>
       </ul>
@@ -209,7 +215,7 @@ nc_close(nc)</pre>
       </h2>
       <p>
         <strong>Repo:</strong>
-        <a href="https://github.com/fish-pace/chla-z-modeling" target="_blank">
+        <a href="https://github.com/fish-pace/chla-z" target="_blank">
           https://github.com/fish-pace/chla-z-modeling
         </a>
       </p>
