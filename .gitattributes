@@ -2,6 +2,7 @@
 old/ export-ignore
 __pycache__/ export-ignore
 docs/text_and_talks/ export-ignore
+**/__pycache__/ export-ignore
 
 # Exclude test / scratch notebooks if any
 notebooks/testing/ export-ignore

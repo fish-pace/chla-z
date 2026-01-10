@@ -29,6 +29,7 @@ https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/
 * **Repo:** https://github.com/fish-pace/chla-z
 * [Example notebook](https://github.com/fish-pace/chla-z/blob/main/notebooks/examples.ipynb) | [Open in Google Colab](https://colab.research.google.com/github/fish-pace/chla-z/blob/main/notebooks/examples.ipynb)
 * [Dataset metadata (`chla-z.json`)](https://github.com/fish-pace/chla-z/blob/main/chla-z.json)
+* [Notebooks documenting dataset creation](https://github.com/fish-pace/chla-z/blob/main/notebooks) (see README in folder)
 
 ---
 
