@@ -108,7 +108,6 @@ In this talk, I will introduce you to an experimental product of CHLA(z), depth 
 import xarray as xr
 zarr_path = "gcs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr"
 ds = xr.open_zarr(zarr_path, consolidated=False, storage_options={"token": "anon"})
-ds
 ```
 
 # Example
@@ -573,7 +572,10 @@ Benefits:
 # Results
 
 ```{python}
+#| echo: true
 #| output: false
+#| message: false
+#| warning: false
 
 ## Load model
 bundle = mu.load_ml_bundle("../../models/brt_chla_profiles_bundle.zip")
