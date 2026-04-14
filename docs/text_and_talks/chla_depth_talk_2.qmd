@@ -1,5 +1,6 @@
 ---
-title: Inferring Global Chlorophyll-a Depth Profiles from PACE Hyperspectral Rrs
+title: Revealing the Hidden Phytoplankton Layer below the Surface
+subtitle: Satellite-Driven Estimates of Global Chlorophyll Depth Profiles using PACE Hyperspectral Ocean Color Data
 author: Eli Holmes
 format:
   revealjs:
@@ -23,7 +24,7 @@ jupyter:
       extension: .qmd
       format_name: quarto
       format_version: '1.0'
-      jupytext_version: 1.17.3
+      jupytext_version: 1.18.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -98,9 +99,12 @@ ca 50% of global primary production is carried out by ocean phytoplankton
 
 # Depth profiles estimated from PACE Rrs
 
-In this talk, I will introduce you to an experimental product of CHLA(z), depth profiles, developed using PACE remote-sensing reflectance (Rrs) data. You can access the cloud-optimized dataset here. zarr version 3+ required. Use `zarr.__version__` to see what you have.
+In this talk, I will introduce you to an experimental product of CHLA(z), depth profiles, developed using PACE remote-sensing reflectance (Rrs) data. You can access the cloud-optimized dataset as follows. zarr version 3+ required. Use `zarr.__version__` to see what you have.
 
 ```{python}
+#| output: false
+#| echo: true
+
 import xarray as xr
 zarr_path = "gcs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr"
 ds = xr.open_zarr(zarr_path, consolidated=False, storage_options={"token": "anon"})
@@ -312,7 +316,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
 # Load data
-url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/data/CHLA_argo_profiles.parquet"
+url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/datasets/chla_z/data/CHLA_argo_profiles.parquet"
 df = pd.read_parquet(url)
 
 df_clean = df
@@ -358,7 +362,7 @@ plt.show()
 
 # Load data from GitHub
 import pandas as pd
-url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/data/argo_na_2024_03.parquet"
+url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/datasets/chla_z/data/argo_na_2024_03.parquet"
 df_na = pd.read_parquet(url)
 
 # make plot
@@ -461,7 +465,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
 # Load data
-url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/data/CHLA_ooi_profiles.parquet"
+url = "https://raw.githubusercontent.com/fish-pace/fish-pace-datasets/main/datasets/chla_z/data/CHLA_ooi_profiles.parquet"
 df = pd.read_parquet(url)
 
 df_clean = df
@@ -569,8 +573,10 @@ Benefits:
 # Results
 
 ```{python}
+#| output: false
+
 ## Load model
-bundle = mu.load_ml_bundle("../models/brt_chla_profiles_bundle.zip")
+bundle = mu.load_ml_bundle("../../models/brt_chla_profiles_bundle.zip")
 brt_models = bundle.model
 meta = bundle.meta
 rrs_cols = meta["rrs_cols"]
@@ -1227,7 +1233,7 @@ We can do this for the whole globe.
 
 ```{python}
 #| fig-align: center
-#| out-width: 30%
+#| out-height: 80%
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1326,7 +1332,7 @@ plt.show()
 
 ```{python}
 #| fig-align: center
-#| out-width: 60%
+#| out-height: 80%
 
 import matplotlib.pyplot as plt
 import numpy as np
