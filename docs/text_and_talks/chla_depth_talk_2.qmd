@@ -574,8 +574,8 @@ Benefits:
 ```{python}
 #| echo: false
 #| output: false
-#| message: false
 #| warning: false
+#| message: false
 
 ## Load model
 bundle = mu.load_ml_bundle("../../models/brt_chla_profiles_bundle.zip")
@@ -824,6 +824,7 @@ y_test = y_test_all[var]
 ```
 
 ```{python}
+#| eval: false
 #| fig-align: center
 
 import numpy as np
@@ -858,6 +859,76 @@ plt.ylim(lims)
 plt.xlabel("log10 Chl-a (true)")
 plt.ylabel("log10 Chl-a (prediction)")
 plt.title(f"Prediction vs Truth\nR² = {r2:.3f}, RMSE = {rmse:.3f}")
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| fig-align: center
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score, mean_squared_error
+
+# keep original true values in linear space
+y_test_linear = y_test.copy()
+
+# transform for the scatter plot
+y_test = np.log10(y_test)
+
+# valid mask for log plot / paired values
+valid = y_test.notna() & np.isfinite(y_test) & (y_test > 0) & np.isfinite(y_pred)
+
+y_true = y_test[valid]
+y_pred = y_pred[valid]
+
+# metrics in log space
+r2 = r2_score(y_true, y_pred)
+rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+
+# convert predictions back to linear space for error histogram
+true_linear = y_test_linear[valid]
+pred_linear = 10 ** y_pred
+
+# linear errors
+err_linear = pred_linear - true_linear
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+
+# 1) existing scatter plot in log space
+ax = axes[0]
+ax.scatter(y_true, y_pred, s=3, alpha=0.3)
+
+lims = [
+    min(y_true.min(), y_pred.min()),
+    max(y_true.max(), y_pred.max())
+]
+ax.plot(lims, lims, "k--", linewidth=1)
+ax.set_xlim(lims)
+ax.set_ylim(lims)
+
+ax.set_xlabel("log10 Chl-a (true)")
+ax.set_ylabel("log10 Chl-a (prediction)")
+ax.set_title(f"Prediction vs Truth\nR² = {r2:.3f}, RMSE = {rmse:.3f}")
+
+# 2) histogram of linear errors
+ax = axes[1]
+ax.hist(err_linear, bins=40)
+ax.axvline(0, linestyle="--")
+
+ax.set_xlabel("Error (pred − true, linear Chl-a)")
+ax.set_title("Distribution of linear errors")
+
+mean_err = np.mean(err_linear)
+median_err = np.median(err_linear)
+
+ax.text(
+    0.02, 0.95,
+    f"mean = {mean_err:.3f}\nmedian = {median_err:.3f}",
+    transform=ax.transAxes,
+    verticalalignment="top"
+)
+
 plt.tight_layout()
 plt.show()
 ```
@@ -1235,8 +1306,8 @@ We can do this for the whole globe.
 
 ```{python}
 #| fig-align: center
-#| fig-width: 8
 #| fig-height: 4.5
+#| fig-width: 8
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1382,7 +1453,8 @@ sample_idx = rng.choice(valid_idx, size=n_to_plot, replace=False)
 ncols = 5
 nrows = int(np.ceil(n_profiles / ncols))
 
-fig, axes = plt.subplots(nrows, ncols, figsize=(3 * ncols, 4 * nrows), sharey=True)
+scale = 0.75  # try 0.7 or 0.65 if needed
+fig, axes = plt.subplots(nrows, ncols, figsize=(scale* 3 * ncols, scale * 4 * nrows), sharey=True)
 axes = np.atleast_1d(axes).ravel()
 
 for ax, idx in zip(axes, sample_idx):
@@ -1482,7 +1554,8 @@ sample_idx = rng.choice(valid_idx, size=n_to_plot, replace=False)
 ncols = 5
 nrows = int(np.ceil(n_profiles / ncols))
 
-fig, axes = plt.subplots(nrows, ncols, figsize=(3 * ncols, 4 * nrows), sharey=True)
+scale = 0.75  # try 0.7 or 0.65 if needed
+fig, axes = plt.subplots(nrows, ncols, figsize=(scale * 3 * ncols, scale * 4 * nrows), sharey=True)
 axes = np.atleast_1d(axes).ravel()
 
 for ax, idx in zip(axes, sample_idx):
@@ -1530,18 +1603,18 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-# Depth-wise Metrics for Each Bin
+# Metrics Predicted
 
-* Errors for depth bin prediction
-* Location of peak CHLA
+* CHLA at each depth bin
+* Depth of peak CHLA
 * Height of peak CHLA
 * Integrated CHLA from 0 to 200m
 
 ```{python}
-# code for metrics is abover where model loaded
+# code for metrics is above where model loaded
 ```
 
-# Absolute Errors for Depth Bins
+# Absolute Errors for CHLA in Depth Bins
 
 ```{python}
 #| fig-align: center
@@ -1550,7 +1623,7 @@ plt.show()
 fig, axes = plt.subplots(1, 3, figsize=(12, 6), sharey=True)
 ax_r2, ax_rmse, ax_bias = axes
 
-# ---- Panel 1: R² (log-scale fit) ----
+# ---- Panel 1 ----
 ax_r2.plot(metrics_df["p90_abs_err"], depth_centers, marker="o")
 ax_r2.set_xlabel("90% of Absolute Errors")
 ax_r2.set_ylabel("Depth (m)")
@@ -1559,7 +1632,7 @@ ax_r2.invert_yaxis()
 ax_r2.grid(True)
 ax_r2.set_title("90% of abs errors are below this")
 
-# ---- Panel 2: RMSE on log scale ----
+# ---- Panel 2 ----
 rmse_lin_vals = metrics_df["median_abs_err"]
 max_rmse = np.nanmax(rmse_lin_vals)
 ax_rmse.plot(rmse_lin_vals, depth_centers, marker="o")
@@ -1568,7 +1641,7 @@ ax_rmse.set_xlim(0, max_rmse * 1.1 if np.isfinite(max_rmse) else 1.0)
 ax_rmse.grid(True)
 ax_rmse.set_title("Median absolute error (linear scale)")
 
-# ---- Panel 3: Bias on log scale ----
+# ---- Panel 3 ----
 bias_lin_vals = metrics_df["bias_lin"]
 max_abs_bias = np.nanmax(np.abs(bias_lin_vals))
 lim_bias = max_abs_bias * 1.1 if np.isfinite(max_abs_bias) else 0.1
