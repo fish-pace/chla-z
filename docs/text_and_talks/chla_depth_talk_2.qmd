@@ -296,14 +296,6 @@ Caveat: Mostly trained on data from open ocean (BGC-Argo). Most data was for sur
 * Predict CHLA(z)
 * Create daily global maps of CHLA(z) using PACE Rrs daily files
 
-# Metrics Predicted
-
-* CHLA at each depth bin
-* Depth of peak CHLA
-* Height of peak CHLA
-* Integrated CHLA from 0 to 200m
-
-
 # BGC-Argo
 
 ![](figures/argo_float_cycle.png)
@@ -832,46 +824,6 @@ y_test = y_test_all[var]
 ```
 
 ```{python}
-#| eval: false
-#| fig-align: center
-
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.metrics import r2_score, mean_squared_error
-
-y_test = np.log10(y_test)
-
-# Make a boolean mask of valid entries: no NaNs, finite predictions
-valid = y_test.notna() & np.isfinite(y_test) & y_test>0
-
-y_true = y_test[valid]
-y_pred = y_pred[valid]
-
-# Compute some metrics
-r2 = r2_score(y_true, y_pred)
-rmse = np.sqrt(mean_squared_error(y_true, y_pred))
-
-# Scatter plot
-plt.figure(figsize=(5, 5))
-plt.scatter(y_true, y_pred, s=3, alpha=0.3)
-
-# 1:1 line
-lims = [
-    min(y_true.min(), y_pred.min()),
-    max(y_true.max(), y_pred.max())
-]
-plt.plot(lims, lims, "k--", linewidth=1)
-plt.xlim(lims)
-plt.ylim(lims)
-
-plt.xlabel("log10 Chl-a (true)")
-plt.ylabel("log10 Chl-a (prediction)")
-plt.title(f"Prediction vs Truth\nR² = {r2:.3f}, RMSE = {rmse:.3f}")
-plt.tight_layout()
-plt.show()
-```
-
-```{python}
 #| fig-align: center
 
 import numpy as np
@@ -885,7 +837,7 @@ y_test_linear = y_test.copy()
 y_test = np.log10(y_test)
 
 # valid mask for log plot / paired values
-valid = y_test.notna() & np.isfinite(y_test) & (y_test > 0) & np.isfinite(y_pred)
+valid = y_test.notna() & np.isfinite(y_test) & np.isfinite(y_pred)
 
 y_true = y_test[valid]
 y_pred = y_pred[valid]
@@ -1310,7 +1262,12 @@ We can do this for the whole globe.
 
 # Let's predict CHLA depth profiles
 
-## CHLA Profiles: Observed vs BRT  { .nostretch }
+* CHLA at each depth bin
+* Depth of peak CHLA
+* Height of peak CHLA
+* Integrated CHLA from 0 to 200m
+
+# CHLA Profiles: Observed vs BRT  { .nostretch }
 
 ```{python}
 #| fig-align: center
@@ -1611,8 +1568,7 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-
-# Absolute Errors for CHLA in Depth Bins
+# Absolute Errors for Depth Bins
 
 ```{python}
 #| fig-align: center
@@ -1764,9 +1720,8 @@ plt.tight_layout(rect=[0, 0, 1, 0.92])
 plt.show()
 ```
 
-# Peak Depth and Integrated CHLA Metrics (Code)
-
 ```{python}
+# functions to compute Peak Depth, Int CHLA and Metrics
 import numpy as np
 import pandas as pd
 from scipy.ndimage import uniform_filter1d
@@ -1888,17 +1843,9 @@ peak_df = df.apply(
     axis=1,
     args=(brt_models, chl_cols, depth_centers, extra),
 )
-
-peak_df[
-    [
-        "peak_obs_m", "peak_pred_m", "peak_error_m",
-        "peak_obs_val", "peak_pred_val", "peak_error_val",
-        "int_obs_0_200", "int_pred_0_200", "int_error_0_200",
-    ]
-].head()
 ```
 
-# Peak Depth and Height
+# Observed and Predicted Peak Depth
 
 ```{python}
 #| fig-align: center
