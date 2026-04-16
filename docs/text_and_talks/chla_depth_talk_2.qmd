@@ -110,9 +110,9 @@ zarr_path = "gcs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr"
 ds = xr.open_zarr(zarr_path, consolidated=False, storage_options={"token": "anon"})
 ```
 
-# Example
+# Example: Depth of peak CHLA
 
-Depth of peak CHLA on March 5, 2024. Red box is where we will make a time series.
+March 5, 2024. Red box is where we will make a time series.
 
 ```{python}
 #| fig-align: center
@@ -167,7 +167,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-# Seasonal patterns of CHLA peak depth
+# Example: Seasonal pattern of peak
 
 ```{python}
 #| fig-align: center
@@ -1470,7 +1470,7 @@ plt.show()
 
 # Coastal waters?  { .nostretch }
 
-Not enough data yet. No correction was done for bathymetry (scattering off bottom), so that will need to be fixed for shallow water. 
+Not enough data yet. Need to correct for bathymetry. 
 
 ```{python}
 #| fig-align: center
