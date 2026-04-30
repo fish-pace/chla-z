@@ -107,9 +107,9 @@ CHLA-Z is generated using a machine learning workflow:
 
 If you use this dataset, please cite:
 
-```
+
 Holmes, E. E. (2026). CHLA-Z: Global chlorophyll-a vertical distribution (0–200 m) derived from PACE OCI and Bio-Argo (draft) (0.1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.18204005
-```
+
 
 ---
 
