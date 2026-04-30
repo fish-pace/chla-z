@@ -63,12 +63,6 @@ pt = pt.isel(z=0) # surface
 pt.sel(time=slice("2024-03-01", "2024-04-01")).plot()
 ```
 
-## https endpoint
-
-```
-https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr
-```
-
 ---
 
 ## Variables
