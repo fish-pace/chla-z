@@ -54,6 +54,12 @@
       "href": "https://fish-pace.github.io/chla-z/",
       "type": "text/html",
       "roles": ["documentation"]
+    },
+
+    "landing_page": {
+      "href": "https://fish-pace.github.io/chla-z/",
+      "type": "text/html",
+      "roles": ["landing_page"]
     }
   
   }
