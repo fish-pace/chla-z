@@ -1,0 +1,60 @@
+{
+  "type": "Feature",
+  "stac_version": "1.0.0",
+  "id": "chla-z-v1",
+  "collection": "chla-z",
+
+  "bbox": [-180, -90, 180, 90],
+
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [-180, -90],
+        [-180, 90],
+        [180, 90],
+        [180, -90],
+        [-180, -90]
+      ]
+    ]
+  },
+
+  "properties": {
+    "datetime": null,
+
+    "start_datetime": "2024-03-01T00:00:00Z",
+    "end_datetime": "2025-09-30T00:00:00Z",
+
+    "title": "CHLA-Z global chlorophyll vertical distribution",
+
+    "processing_level": "L4",
+
+    "platform": "PACE",
+
+    "instruments": ["OCI"]
+  },
+
+  "assets": {
+  
+    "zarr_https": {
+      "href": "https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr",
+      "type": "application/vnd+zarr",
+      "roles": ["data"],
+      "title": "CHLA-Z Zarr v3 (HTTPS)"
+    },
+  
+    "zarr_gcs": {
+      "href": "gs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/zarr",
+      "type": "application/vnd+zarr",
+      "roles": ["data"],
+      "title": "CHLA-Z Zarr v3 (GCS direct access)"
+    },
+  
+    "documentation": {
+      "href": "https://fish-pace.github.io/chla-z/",
+      "type": "text/html",
+      "roles": ["documentation"]
+    }
+  
+  }
+}
