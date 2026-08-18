@@ -17,11 +17,14 @@ The product is generated using a **boosted regression tree (BRT)** model trained
 gs://nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z
 ```
 
-Public HTTPS access (no authentication required):  
-https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/
+**Browse bucket in browser** https://console.cloud.google.com/storage/browser/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z
 
 > Note: Google Cloud Console “Browse” links require login even for public buckets.  
 > Use HTTPS links or example files for anonymous access.
+
+**Non-browser** Public HTTPS access (no authentication required):  
+https://storage.googleapis.com/nmfs_odp_nwfsc/CB/fish-pace-datasets/chla-z/
+
 
 ---
 
